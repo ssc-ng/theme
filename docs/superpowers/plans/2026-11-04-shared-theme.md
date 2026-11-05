@@ -225,11 +225,10 @@ Expected: FAIL, because the script doesn't exist.
 
 - [ ] **Step 3: Implement `script/check_css_vars.py`, then confirm the tests pass**
 
-- [ ] **Step 4: Write the action.** It has three steps, in this order:
+- [ ] **Step 4: Write the action.** It has two steps, in this order:
 
-1. `ruby/setup-ruby@v1` with `bundler-cache: false`.
-2. `bundle lock --update ssc-ng-theme` in `working-directory`.
-3. `ruby/setup-ruby@v1` again with `bundler-cache: true`, which installs and caches from the updated lock.
+1. `ruby/setup-ruby@v1` with `bundler-cache: true`, which installs and caches from the committed lock.
+2. `bundle update ssc-ng-theme --conservative` in `working-directory`, with `BUNDLE_DEPLOYMENT` and `BUNDLE_FROZEN` set to `false`.
 
 - [ ] **Step 5: Write `ci.yml`**
 

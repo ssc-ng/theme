@@ -111,9 +111,9 @@ The plugin does four things:
 ### How updates reach sites
 
 - Sites follow the `v1` branch. A breaking redesign would use a new `v2` branch. (Builder's call)
-- `Gemfile.lock` stays committed and pins everything else. A CI step runs `bundle lock --update ssc-ng-theme` before installing gems, so the theme alone floats. The changed lock file is never committed.
+- `Gemfile.lock` stays committed and pins everything else. A CI step runs `bundle update ssc-ng-theme --conservative` after installing gems from the committed lock file, so the theme alone floats. (`bundle lock --update` does not work: it leaves a git gem at its committed revision and bumps other gems.) The changed lock file is never committed.
 - A composite action in `ssc-ng/theme` holds this and the Ruby setup, and replaces the `ruby/setup-ruby` step in each site's workflow, so these steps are not copied between repos. All sites run Ruby 3.3, which requires merging `ssc-ng.github.io` PR #8.
-- `ruby/setup-ruby` with `bundler-cache: true` installs gems straight away, so the step order and gem caching need care. How to resolve this is the builder's call.
+- `ruby/setup-ruby` with `bundler-cache: true` runs first, so its cache is keyed on the committed lock file and stays valid when the theme moves. Only the theme is fetched afterward.
 
 Local previews, such as `ssc2`'s `tools/serve_site.sh`, use the theme version in the committed lock file unless the developer updates it. That is acceptable, since CI always takes the latest. Check that the existing Docker images can still fetch a gem from GitHub.
 
