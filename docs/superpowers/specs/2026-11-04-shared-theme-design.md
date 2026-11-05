@@ -138,7 +138,7 @@ Every pull request on `ssc-ng/theme` gets a preview website, using the same Clou
 
 - **Content:** the test sites from the Safety section, under one preview address, with a small index page linking to each. Each test site sits under its own path, such as `/just-the-docs/`, which also exercises links under a base path. Include pages showing real components: code, tables, buttons, links, logo. (Builder's call)
 - **Scope:** pull requests from branches of this repository only, because forks can't read the deploy secrets, as on the other sites. (Builder's call)
-- **Setup:** one Cloudflare Pages project named `ssc-theme`, following the `ssc-` naming that `archive` uses, and the secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` on this repository. These are repo-level secrets on `archive` and must be added here by Lars. `archive`'s `site/DEPLOY-PREVIEW.md` has the steps.
+- **Setup:** one Cloudflare Pages project named `ssc-theme`, following the `ssc-` naming that `archive` uses, and the organization secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, which this repository can already read. The project still has to be created. `archive`'s `site/DEPLOY-PREVIEW.md` has the steps.
 - **Reuse:** the workflow should match the other sites' `preview` job. It is separate from promotion to `v1`, and a preview failure should not count as a failed theme test. (Builder's call)
 
 ## Order of work
