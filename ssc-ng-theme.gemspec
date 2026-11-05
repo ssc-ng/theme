@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name = "ssc-ng-theme"
-  spec.version = "1.2.0"
+  spec.version = "2.0.0"
   spec.summary = "Shared look for the SSC-NG websites"
   spec.authors = ["SSC Next Generation"]
   spec.license = "MIT"
