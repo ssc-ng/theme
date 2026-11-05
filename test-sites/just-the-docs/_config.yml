@@ -1,0 +1,17 @@
+title: Theme test site (Just the Docs)
+url: "https://ssc-ng.net"
+
+theme: just-the-docs
+plugins:
+  - ssc-ng-theme
+
+# Deliberately wrong local settings: the brand must replace them, and the
+# unrelated sass option must survive. tests/test_built_sites.py checks both.
+color_scheme: light
+logo: /wrong.png
+sass:
+  style: compressed
+
+exclude:
+  - Gemfile
+  - Gemfile.lock

@@ -1,0 +1,31 @@
+name: Set up Ruby with the newest SSC-NG theme
+description: >-
+  Installs Ruby and the site's gems, keeping everything pinned by Gemfile.lock
+  except ssc-ng-theme, which moves to the newest v1. The changed lock file is
+  never committed.
+inputs:
+  working-directory:
+    description: Folder holding the site's Gemfile
+    required: true
+  ruby-version:
+    description: Ruby version
+    default: "3.3"
+runs:
+  using: composite
+  steps:
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ inputs.ruby-version }}
+        bundler-cache: false
+        working-directory: ${{ inputs.working-directory }}
+    - name: Update the theme in the lock file
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: bundle lock --update ssc-ng-theme
+    # A second setup step, because bundler-cache installs gems as soon as it
+    # runs: it must see the updated lock file, and its cache key depends on it.
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ inputs.ruby-version }}
+        bundler-cache: true
+        working-directory: ${{ inputs.working-directory }}

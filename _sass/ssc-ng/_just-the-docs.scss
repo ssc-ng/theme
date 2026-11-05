@@ -1,0 +1,6 @@
+// Inline code and code blocks are bold: the theme's weight 400 is hard to read.
+code,
+pre,
+:not(pre, figure) > code {
+  font-weight: 700;
+}

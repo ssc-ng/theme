@@ -1,0 +1,86 @@
+# Tests every theme change. On main, a change that passes moves the v1 branch,
+# which is what the sites follow, so it reaches them on their next build.
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build the test sites
+        run: bash script/build-test-sites.sh
+      - name: Check the built sites
+        run: python3 -I -m unittest discover -s tests -t . -v
+
+  action:
+    # Also covers a site with no Gemfile.lock, as test sites don't commit one.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          working-directory: test-sites/just-the-docs
+      - name: Build with the action's gems
+        working-directory: test-sites/just-the-docs
+        run: bundle exec jekyll build
+
+  real-sites:
+    # Build the real sites against this theme, so that a change which would
+    # break one, such as a renamed CSS variable, never reaches v1.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repo: [archive, ssc2, docker-stata]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: theme
+      - uses: actions/checkout@v7
+        with:
+          repository: ssc-ng/${{ matrix.repo }}
+          path: site-repo
+      - name: Check whether this site uses the theme yet
+        id: migrated
+        run: |
+          if grep -q 'ssc-ng-theme' site-repo/site/Gemfile; then
+            echo "yes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Not migrated yet, skipping."
+          fi
+      - uses: ruby/setup-ruby@v1
+        if: steps.migrated.outputs.yes == 'true'
+        with:
+          ruby-version: "3.3"
+          bundler-cache: false
+      - name: Build against this theme
+        if: steps.migrated.outputs.yes == 'true'
+        working-directory: site-repo/site
+        run: |
+          sed -i "s|^gem \"ssc-ng-theme\".*|gem \"ssc-ng-theme\", path: \"$GITHUB_WORKSPACE/theme\"|" Gemfile
+          bundle install
+          bundle exec jekyll build
+      - name: Check its CSS variables
+        if: steps.migrated.outputs.yes == 'true'
+        run: python3 -I theme/script/check_css_vars.py site-repo/site/_site/assets/css/just-the-docs-default.css
+
+  promote:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [test, action, real-sites]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Move v1 to this commit
+        # Never forced: anything but a fast-forward fails instead of overwriting.
+        run: git push origin HEAD:refs/heads/v1

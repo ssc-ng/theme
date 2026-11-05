@@ -1,1 +1,9 @@
 .wrangler/
+.superpowers/
+_preview/
+_preview-root/
+.jekyll-cache/
+test-sites/*/_site/
+test-sites/*/Gemfile.lock
+test-sites/*/.bundle/
+__pycache__/
