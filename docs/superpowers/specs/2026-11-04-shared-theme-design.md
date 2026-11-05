@@ -99,7 +99,7 @@ The plugin does four things:
   - A color scheme file, `_sass/color_schemes/ssc-ng.scss`.
   - An override of `css/custom.scss.liquid` that loads brand and shared styles, then the site's own `custom.scss`.
   - Rules for code weight and font.
-- **Minimal Mistakes layer:** phase 2, below.
+- **Minimal Mistakes layer:** a skin, `_sass/minimal-mistakes/skins/_ssc-ng.scss`, which sets the theme's Sass variables from the same values. Lars approved this look on a build of `ssc-ng.net`.
 
 ### Sites and their styles
 

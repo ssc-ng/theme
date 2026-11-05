@@ -1,0 +1,18 @@
+title: Theme test site
+url: "https://ssc-ng.net"
+
+theme: minimal-mistakes-jekyll
+plugins:
+  - jekyll-include-cache
+  - ssc-ng-theme
+
+# Deliberately wrong local settings: the brand must replace them, and the
+# unrelated sass option must survive. tests/test_built_sites.py checks both.
+minimal_mistakes_skin: default
+logo: /wrong.png
+sass:
+  style: compressed
+
+exclude:
+  - Gemfile
+  - Gemfile.lock

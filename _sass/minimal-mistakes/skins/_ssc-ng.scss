@@ -1,0 +1,15 @@
+// Minimal Mistakes skin, from the brand's values. The theme loads a skin before
+// its own styles, so variables set here reach them.
+@import "ssc-ng/tokens";
+@import "ssc-ng/brand";
+
+$primary-color: $ssc-primary;
+$link-color: $ssc-accent;
+$masthead-link-color: $ssc-primary;
+$monospace: $ssc-mono;
+
+// Outranks the theme's rules, which load after this one.
+html body code,
+html body pre {
+  font-weight: 700;
+}

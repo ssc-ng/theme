@@ -25,7 +25,9 @@ In the site's workflow, replace the `ruby/setup-ruby` step with the following, w
     working-directory: site
 ```
 
-The plugin sets `color_scheme` and `logo`, replacing any local value. Page-specific styles stay in the site's `_sass/custom/custom.scss`, and should use the CSS variables in [`_sass/ssc-ng/_brand.scss`](_sass/ssc-ng/_brand.scss) rather than fixed colors or fonts.
+The same steps work with `theme: minimal-mistakes-jekyll`, as on `ssc-ng.net`: leave out `just-the-docs`, and use the theme's own gem.
+
+The plugin sets `logo`, and `color_scheme` or `minimal_mistakes_skin`, replacing any local value. Page-specific styles stay in the site's `_sass/custom/custom.scss`, and should use the CSS variables in [`_sass/ssc-ng/_brand.scss`](_sass/ssc-ng/_brand.scss) rather than fixed colors or fonts.
 
 ## Change the theme
 

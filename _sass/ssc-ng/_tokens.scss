@@ -1,0 +1,11 @@
+// The brand's values, and the one place they are written. Sass variables,
+// because themes compute with them at compile time, as in mix($link-color).
+// _brand.scss passes them on to browsers as CSS variables.
+$ssc-primary: #0E6480;
+$ssc-soft: #E3F1F5;
+$ssc-hover: #C9E3EA;
+$ssc-partial: #6FA9BC;
+$ssc-accent: #0B6E8E;
+$ssc-bar-ink: #DDF0F5;
+$ssc-sidebar: #F4F8F9;
+$ssc-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
