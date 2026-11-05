@@ -31,6 +31,23 @@ jobs:
         working-directory: test-sites/just-the-docs
         run: bundle exec jekyll build
 
+  float:
+    # A site's committed lock file pins an older v1. The action must move the
+    # theme to the newest v1 and leave every other gem alone.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Keep the lock file as committed
+        run: cp tests/fixtures/floating-site/Gemfile.lock "$RUNNER_TEMP/lock-before"
+      - uses: ./.github/actions/setup
+        with:
+          working-directory: tests/fixtures/floating-site
+      - name: Check that only the theme moved
+        run: |
+          expected=$(git ls-remote https://github.com/ssc-ng/theme.git refs/heads/v1 | cut -f1)
+          python3 -I script/check_lock_float.py "$RUNNER_TEMP/lock-before" \
+            tests/fixtures/floating-site/Gemfile.lock "$expected"
+
   real-sites:
     # Build the real sites against this theme, so that a change which would
     # break one, such as a renamed CSS variable, never reaches v1.
@@ -73,7 +90,7 @@ jobs:
 
   promote:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [test, action, real-sites]
+    needs: [test, action, float, real-sites]
     runs-on: ubuntu-latest
     permissions:
       contents: write
