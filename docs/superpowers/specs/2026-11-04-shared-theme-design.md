@@ -46,7 +46,7 @@ Approved from real builds of the `archive` site.
 | Soft background | `#E3F1F5` | `--navy-soft` `#e8eef5` |
 | Links and accent | `#0B6E8E` | `--accent` `#1b6fae` |
 | Hover | `#C9E3EA` | `#cfdcea` |
-| Partial state (History timeline) | `#6FA9BC` | `#6f8fb3` |
+| Partial state (History timeline): at least 3:1 against the page and 2:1 against primary, as these cells carry no text (Decided: darker than first approved) | `#5A9AAF` | `#6f8fb3` |
 | Sidebar background | `#F4F8F9` | Theme default |
 | Results-bar text | `#DDF0F5` | `#dce7f2` |
 | Console keyword (`docker-stata` only, not shown in the approved builds; builder's call, check in its preview) | `#8FD3E6` | `#8fc1ec` |

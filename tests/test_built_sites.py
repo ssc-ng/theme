@@ -45,7 +45,7 @@ class JustTheDocsChecks:
         self.assertLess(self.css().count("\n"), 50)
 
     def test_every_color_is_defined(self):
-        for value in ("#0e6480", "#e3f1f5", "#0b6e8e", "#c9e3ea", "#6fa9bc",
+        for value in ("#0e6480", "#e3f1f5", "#0b6e8e", "#c9e3ea", "#5a9aaf",
                       "#f4f8f9", "#ddf0f5", "#8fd3e6"):
             self.assertIn(value, self.css().lower())
 
@@ -227,6 +227,28 @@ class MinimalMistakesChecks:
         out = subprocess.run([sys.executable, "-I", ROOT / "script/check_css_vars.py",
                               self.site / "assets/css/main.css"], capture_output=True, text=True)
         self.assertEqual(out.returncode, 0, out.stdout)
+
+
+def luminance(color):
+    channels = [int(color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+    r, g, b = (c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in channels)
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+class Tokens(unittest.TestCase):
+    def token(self, name):
+        text = (ROOT / "_sass/ssc-ng/_tokens.scss").read_text()
+        return re.search(rf"\${name}:\s*(#[0-9A-Fa-f]{{6}})", text).group(1)
+
+    def contrast(self, first, second):
+        high, low = sorted((luminance(first), luminance(second)), reverse=True)
+        return (high + 0.05) / (low + 0.05)
+
+    def test_partial_color_stands_out_from_the_page(self):
+        self.assertGreaterEqual(self.contrast(self.token("ssc-partial"), "#FFFFFF"), 3)
+
+    def test_partial_color_stays_distinct_from_primary(self):
+        self.assertGreaterEqual(self.contrast(self.token("ssc-partial"), self.token("ssc-primary")), 2)
 
 
 class TokensAreTheOnlySource(unittest.TestCase):
