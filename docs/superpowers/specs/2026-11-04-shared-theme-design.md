@@ -88,7 +88,7 @@ Sites remove their local `color_scheme` and `logo` settings, and the plugin supp
 The plugin does four things:
 
 1. Adds the gem's Sass and include folders to Jekyll's search paths, with priority over the real theme and below the site's own files.
-2. Sets defaults for `color_scheme` and `logo`.
+2. Sets `color_scheme` and `logo`, replacing any local value so a site can't drift from the brand.
 3. Adds the logo and font files to the site's output.
 4. Detects the real theme and applies the matching layer.
 
@@ -132,13 +132,23 @@ Expected time for a change to arrive:
 - Each site's deploy already depends on its build, so a failed build leaves the last good version live. This also covers GitHub being unavailable when a gem is fetched.
 - The test sites should cover the logo, fonts, code styling and links under a base path.
 
+### Theme previews
+
+Every pull request on `ssc-ng/theme` gets a preview website, using the same Cloudflare Pages setup as the other sites, with the link posted as a PR comment. This lets a theme change be seen before it reaches any site. (Decided)
+
+- **Content:** the test sites from the Safety section, under one preview address, with a small index page linking to each. Each test site sits under its own path, such as `/just-the-docs/`, which also exercises links under a base path. Include pages showing real components: code, tables, buttons, links, logo. (Builder's call)
+- **Scope:** pull requests from branches of this repository only, because forks can't read the deploy secrets, as on the other sites. (Builder's call)
+- **Setup:** one Cloudflare Pages project named `ssc-theme`, following the `ssc-` naming that `archive` uses, and the organization secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, which this repository can already read. The project still has to be created. `archive`'s `site/DEPLOY-PREVIEW.md` has the steps.
+- **Reuse:** the workflow should match the other sites' `preview` job. It is separate from promotion to `v1`, and a preview failure should not count as a failed theme test. (Builder's call)
+
 ## Order of work
 
 1. **Prove the plugin on `archive`, on a throwaway branch.** It must show that a plugin can add include and Sass paths with the right priority, set defaults, and output static files. Nothing else proceeds until this works. If it fails, fall back to having the composite action check out the theme and copy its files into the site before the build, and revisit this design with Lars.
 2. **Build the gem and CI:** brand and Just the Docs layers, test site, and promotion to `v1`.
-3. **Move `archive`** by PR. Compare its Cloudflare preview with the approved look.
-4. **Move `ssc2` and `docker-stata`** by PR, one at a time.
-5. **Phase 2: `ssc-ng.net`.** Try the Minimal Mistakes layer on a throwaway branch, using the same gem. Show Lars the result before opening a PR, since the approved look was only seen on Just the Docs. If the plugin can't restyle it cleanly, the fallback is for the main site to load a shared CSS file built from the brand layer. This depends on PRs #7 and #8.
+3. **Add theme previews** in their own PR, so that every later theme change can be seen before merging.
+4. **Move `archive`** by PR. Compare its Cloudflare preview with the approved look.
+5. **Move `ssc2` and `docker-stata`** by PR, one at a time.
+6. **Phase 2: `ssc-ng.net`.** Try the Minimal Mistakes layer on a throwaway branch, using the same gem. Show Lars the result before opening a PR, since the approved look was only seen on Just the Docs. If the plugin can't restyle it cleanly, the fallback is for the main site to load a shared CSS file built from the brand layer. This depends on PRs #7 and #8.
 
 ## What's left to the builder
 
@@ -152,4 +162,5 @@ Expected time for a change to arrive:
 - `archive`, `ssc2` and `docker-stata` get colors, code font and logo only from the gem, and their previews match the approved look.
 - A test change merged to `main` of `ssc-ng/theme` reaches a site on its next build, with no commit to that site.
 - A deliberately broken theme change fails CI and does not reach `v1`.
+- A pull request on `ssc-ng/theme` gets a working preview link, posted as a comment.
 - For phase 2, `ssc-ng.net` carries the brand from the same source, keeping its layout.
