@@ -13,19 +13,20 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ${{ inputs.ruby-version }}
-        bundler-cache: false
-        working-directory: ${{ inputs.working-directory }}
-    - name: Update the theme in the lock file
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-      run: bundle lock --update ssc-ng-theme
-    # A second setup step, because bundler-cache installs gems as soon as it
-    # runs: it must see the updated lock file, and its cache key depends on it.
+    # Installs from the committed lock file, so its cache stays valid when the
+    # theme moves.
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ inputs.ruby-version }}
         bundler-cache: true
         working-directory: ${{ inputs.working-directory }}
+    # Not `bundle lock --update`: that leaves a git gem at its committed
+    # revision and bumps other gems. setup-ruby turns on deployment mode, which
+    # would refuse this change to the lock file.
+    - name: Move the theme to the newest v1
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        BUNDLE_DEPLOYMENT: "false"
+        BUNDLE_FROZEN: "false"
+      run: bundle update ssc-ng-theme --conservative
