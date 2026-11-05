@@ -88,6 +88,25 @@ class JustTheDocsChecks:
         for name in ("logo-64.png", "logo-180.png"):
             self.assertTrue((self.site / "assets/ssc-ng-theme" / name).exists(), name)
 
+    def test_shared_site_rules_are_present(self):
+        for selector in (".kicker", ".lede", "fieldset", "legend", ".hint", ".row", ".check",
+                         ".results", ".results-bar", ".results pre", ".cursor", "#stats"):
+            self.assertRegex(self.css(), r"(^|[},\s])" + re.escape(selector) + r"\s*[{,]")
+
+    def test_results_window_extras_are_present(self):
+        for selector in (".results+.results", ".results pre .kw", ".results-bar .ttl",
+                         ".results-bar a", ".results-bar .barbtns button",
+                         ".results-bar button:disabled"):
+            self.assertIn(selector, self.css())
+
+    def test_shared_rules_use_brand_variables(self):
+        shared = (ROOT / "_sass/ssc-ng/_shared.scss").read_text()
+        for value in ("ui-monospace", "--navy", "--accent:", "#dce7f2", "#8fc1ec"):
+            self.assertNotIn(value, shared)
+
+    def test_results_window_stays_regular_weight(self):
+        self.assertRegex(self.css(), r"\.results pre\{[^}]*font:\s*\.88rem/1\.65\s+var\(--brand-mono\)")
+
     def test_root_absolute_links_carry_the_base_path(self):
         html = (self.site / "index.html").read_text()
         for link in re.findall(r'(?:href|src)="(/[^/"][^"]*)"', html):
