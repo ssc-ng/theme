@@ -42,6 +42,57 @@ class JustTheDocsChecks:
     def test_other_sass_options_survive(self):
         self.assertLess(self.css().count("\n"), 50)
 
+    def test_every_color_is_defined(self):
+        for value in ("#0e6480", "#e3f1f5", "#0b6e8e", "#c9e3ea", "#6fa9bc",
+                      "#f4f8f9", "#ddf0f5", "#8fd3e6"):
+            self.assertIn(value, self.css().lower())
+
+    def test_every_brand_variable_is_defined(self):
+        for name in ("--brand-primary", "--brand-soft", "--brand-hover",
+                     "--brand-partial", "--brand-accent", "--brand-primary-rgb",
+                     "--brand-bar-ink", "--brand-mono", "--ink", "--muted", "--line",
+                     "--console-bg", "--console-ink", "--console-dim",
+                     "--console-good", "--console-err", "--console-keyword"):
+            self.assertIn(name + ":", self.css())
+
+    def test_old_brand_values_are_gone(self):
+        for value in ("#123a63", "18,58,99", "18, 58, 99"):
+            self.assertNotIn(value, self.css())
+
+    def test_code_is_bold(self):
+        self.assertRegex(self.css(), r"code[^{]*\{[^}]*font-weight:\s*(700|bold)")
+
+    def test_font_stack_has_fallbacks(self):
+        self.assertRegex(self.css(), r'"JetBrains Mono",\s*ui-monospace')
+
+    def test_both_font_weights_are_declared(self):
+        faces = re.findall(r"@font-face\s*\{[^}]*\}", self.css())
+        weights = {m for f in faces for m in re.findall(r"font-weight:\s*(\d+)", f)}
+        self.assertEqual(weights, {"400", "700"})
+
+    def test_font_urls_resolve_on_disk(self):
+        urls = re.findall(r'url\("?([^")]+\.woff2)', self.css())
+        self.assertTrue(urls)
+        for url in urls:
+            self.assertTrue((self.css_path.parent / url).resolve().exists(), url)
+
+    def test_font_license_ships_with_the_fonts(self):
+        self.assertTrue((self.site / "assets/ssc-ng-theme/OFL.txt").exists())
+
+    def test_icon_links_use_the_base_path(self):
+        html = (self.site / "index.html").read_text()
+        self.assertIn(f'href="{self.base}/assets/ssc-ng-theme/logo-64.png"', html)
+        self.assertIn(f'href="{self.base}/assets/ssc-ng-theme/logo-180.png"', html)
+
+    def test_icon_files_exist(self):
+        for name in ("logo-64.png", "logo-180.png"):
+            self.assertTrue((self.site / "assets/ssc-ng-theme" / name).exists(), name)
+
+    def test_root_absolute_links_carry_the_base_path(self):
+        html = (self.site / "index.html").read_text()
+        for link in re.findall(r'(?:href|src)="(/[^/"][^"]*)"', html):
+            self.assertTrue(link.startswith(self.base + "/"), link)
+
 
 class BuiltUnderBasePath(JustTheDocsChecks, unittest.TestCase):
     output = "_preview"

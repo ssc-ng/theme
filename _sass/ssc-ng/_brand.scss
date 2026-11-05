@@ -1,0 +1,42 @@
+// The SSC-NG brand, independent of any Jekyll theme. Sites use these variables
+// rather than fixed values. Renaming or removing one breaks sites silently,
+// which CI's check_css_vars.py guards against.
+
+// Relative to the stylesheet in /assets/css/, so it works under any base path.
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../ssc-ng-theme/JetBrainsMono-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../ssc-ng-theme/JetBrainsMono-Bold.woff2") format("woff2");
+}
+
+:root {
+  --brand-primary: #0E6480;
+  --brand-primary-rgb: 14,100,128;
+  --brand-soft: #E3F1F5;
+  --brand-hover: #C9E3EA;
+  --brand-partial: #6FA9BC;
+  --brand-accent: #0B6E8E;
+  --brand-bar-ink: #DDF0F5;
+  --brand-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
+
+  --ink: #20242a;
+  --muted: #5c6572;
+  --line: #d7dde4;
+
+  --console-bg: #171b21;
+  --console-ink: #e6e9ec;
+  --console-dim: #8a949f;
+  --console-good: #7fd08c;
+  --console-err: #e07a7a;
+  --console-keyword: #8FD3E6;
+}
