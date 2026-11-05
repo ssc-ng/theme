@@ -90,6 +90,22 @@ class JustTheDocsChecks:
         logo = re.findall(r"\.site-logo\s*\{([^}]*)\}", self.css())[-1]
         self.assertNotIn("width:100%", logo.replace(" ", ""))
 
+    def test_sidebar_footer_links_back_to_the_main_site(self):
+        html = (self.site / "index.html").read_text()
+        footer = re.search(r'<div class="d-md-block d-none site-footer">(.*?)</div>', html, re.S).group(1)
+        self.assertIn('href="https://ssc-ng.net/"', footer)
+        self.assertLess(footer.index("ssc-ng.net"), footer.index("This site uses"))
+
+    def test_phone_footer_links_back_to_the_main_site(self):
+        html = (self.site / "index.html").read_text()
+        footer = re.search(r'<div class="d-md-none mt-4 fs-2">(.*?)</div>', html, re.S).group(1)
+        self.assertIn('href="https://ssc-ng.net/"', footer)
+        self.assertIn("This site uses", footer)
+
+    def test_text_box_styles_leave_the_search_box_alone(self):
+        rule = re.search(r"([^{}]*input\[type=text\][^{}]*)\{[^}]*--brand-mono", self.css())
+        self.assertIn(":not(.search-input)", rule.group(1))
+
     def test_icon_links_use_the_base_path(self):
         html = (self.site / "index.html").read_text()
         self.assertIn(f'href="{self.base}/assets/ssc-ng-theme/logo-64.png"', html)

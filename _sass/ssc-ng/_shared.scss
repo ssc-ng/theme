@@ -25,7 +25,9 @@ legend {
 
 .hint { font-size: .8rem; color: var(--muted); font-weight: 400; }
 
-input[type=text] {
+// :where keeps this rule's specificity, so sites' own rules still override it.
+// The search box has its own padding, which leaves room for its icon.
+input[type=text]:where(:not(.search-input)) {
   width: 100%; padding: .55rem .7rem; border: 1px solid var(--line);
   border-radius: 6px; font: inherit;
   font-family: var(--brand-mono);

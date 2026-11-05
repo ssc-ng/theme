@@ -12,3 +12,10 @@ pre,
   width: 3rem;
   margin-right: 0.75rem;
 }
+
+// Link back to the main site, above the theme credit in the sidebar footer.
+.site-back-link {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
