@@ -52,13 +52,18 @@ jobs:
             tests/fixtures/floating-site/Gemfile.lock "$expected"
 
   real-sites:
+    name: real-sites (${{ matrix.repo }})
     # Build the real sites against this theme, so that a change which would
     # break one, such as a renamed CSS variable, never reaches v1.
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        repo: [archive, ssc2, docker-stata]
+        include:
+          - {repo: archive, dir: site, css: assets/css/just-the-docs-default.css}
+          - {repo: ssc2, dir: site, css: assets/css/just-the-docs-default.css}
+          - {repo: docker-stata, dir: site, css: assets/css/just-the-docs-default.css}
+          - {repo: ssc-ng.github.io, dir: ., css: assets/css/main.css}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -70,7 +75,7 @@ jobs:
       - name: Check whether this site uses the theme yet
         id: migrated
         run: |
-          if grep -q 'ssc-ng-theme' site-repo/site/Gemfile; then
+          if grep -q 'ssc-ng-theme' site-repo/${{ matrix.dir }}/Gemfile; then
             echo "yes=true" >> "$GITHUB_OUTPUT"
           else
             echo "Not migrated yet, skipping."
@@ -82,14 +87,14 @@ jobs:
           bundler-cache: false
       - name: Build against this theme
         if: steps.migrated.outputs.yes == 'true'
-        working-directory: site-repo/site
+        working-directory: site-repo/${{ matrix.dir }}
         run: |
           sed -i "s|^gem \"ssc-ng-theme\".*|gem \"ssc-ng-theme\", path: \"$GITHUB_WORKSPACE/theme\"|" Gemfile
           bundle install
           bundle exec jekyll build
       - name: Check its CSS variables
         if: steps.migrated.outputs.yes == 'true'
-        run: python3 -I theme/script/check_css_vars.py site-repo/site/_site/assets/css/just-the-docs-default.css
+        run: python3 -I theme/script/check_css_vars.py site-repo/${{ matrix.dir }}/_site/${{ matrix.css }}
 
   release:
     if: startsWith(github.ref, 'refs/tags/')

@@ -21,6 +21,9 @@ module SscNgTheme
       # Replaces any local value, so that a site cannot drift from the brand.
       site.config["color_scheme"] = "ssc-ng"
       site.config["logo"] = LOGO
+    when "minimal-mistakes-jekyll"
+      site.config["minimal_mistakes_skin"] = "ssc-ng"
+      site.config["logo"] = LOGO
     else
       Jekyll.logger.warn "ssc-ng-theme:", "no brand layer for theme #{theme.inspect}"
     end

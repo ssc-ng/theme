@@ -2,6 +2,8 @@
 // rather than fixed values. Renaming or removing one breaks sites silently,
 // which CI's check_css_vars.py guards against.
 
+@import "ssc-ng/tokens";
+
 // Relative to the stylesheet in /assets/css/, so it works under any base path.
 @font-face {
   font-family: "JetBrains Mono";
@@ -20,14 +22,14 @@
 }
 
 :root {
-  --brand-primary: #0E6480;
+  --brand-primary: #{$ssc-primary};
   --brand-primary-rgb: 14,100,128;
-  --brand-soft: #E3F1F5;
-  --brand-hover: #C9E3EA;
-  --brand-partial: #6FA9BC;
-  --brand-accent: #0B6E8E;
-  --brand-bar-ink: #DDF0F5;
-  --brand-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
+  --brand-soft: #{$ssc-soft};
+  --brand-hover: #{$ssc-hover};
+  --brand-partial: #{$ssc-partial};
+  --brand-accent: #{$ssc-accent};
+  --brand-bar-ink: #{$ssc-bar-ink};
+  --brand-mono: #{inspect($ssc-mono)};
 
   --ink: #20242a;
   --muted: #5c6572;

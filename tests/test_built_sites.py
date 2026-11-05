@@ -1,5 +1,7 @@
 """Checks on the test sites built by script/build-test-sites.sh."""
 import re
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -173,6 +175,79 @@ class Components(unittest.TestCase):
         html = (ROOT / "_preview/just-the-docs/index.html").read_text()
         for marker in ("<table", 'class="btn', "<kbd>", "highlighter-rouge", "<blockquote"):
             self.assertIn(marker, html)
+
+
+class MinimalMistakesChecks:
+    """Shared checks; subclasses choose the build to inspect."""
+
+    output = None
+    base = None
+
+    @property
+    def site(self):
+        return ROOT / self.output / "minimal-mistakes"
+
+    def css(self):
+        return (self.site / "assets/css/main.css").read_text()
+
+    def html(self):
+        return (self.site / "index.html").read_text()
+
+    def test_brand_colors_reach_the_theme(self):
+        css = self.css().lower()
+        self.assertIn("#0b6e8e", css)  # links
+        self.assertIn("#0e6480", css)  # primary
+        self.assertNotIn("#6f777d", css)  # the theme's own primary
+
+    def test_brand_variables_are_defined(self):
+        self.assertIn("--brand-primary:", self.css())
+
+    def test_code_is_bold_in_the_brand_font(self):
+        self.assertRegex(self.css(), r"code[^{}]*\{[^}]*font-weight:\s*(700|bold)")
+        self.assertRegex(self.css(), r"code[^{}]*\{[^}]*font-family:[^;}]*JetBrains Mono")
+
+    def test_code_rule_outranks_the_theme_rules(self):
+        self.assertIn("html body code", self.css())
+
+    def test_font_urls_resolve_on_disk(self):
+        urls = re.findall(r'url\("?(\.\./ssc-ng-theme/[^")]+)', self.css())
+        self.assertEqual(len(set(urls)), 2)
+        for url in set(urls):
+            self.assertTrue((self.site / "assets/css" / url).resolve().exists(), url)
+
+    def test_logo_replaces_local_setting(self):
+        self.assertIn(f'src="{self.base}/assets/ssc-ng-theme/logo-400.png"', self.html())
+        self.assertNotIn("wrong.png", self.html())
+        self.assertTrue((self.site / "assets/ssc-ng-theme/logo-400.png").exists())
+
+    def test_other_sass_options_survive(self):
+        self.assertLess(self.css().count("\n"), 20)
+
+    def test_every_variable_is_defined(self):
+        out = subprocess.run([sys.executable, "-I", ROOT / "script/check_css_vars.py",
+                              self.site / "assets/css/main.css"], capture_output=True, text=True)
+        self.assertEqual(out.returncode, 0, out.stdout)
+
+
+class TokensAreTheOnlySource(unittest.TestCase):
+    def test_font_stack_keeps_its_quotes(self):
+        for path in ("just-the-docs/assets/css/just-the-docs-default.css", "minimal-mistakes/assets/css/main.css"):
+            self.assertIn('--brand-mono: "JetBrains Mono"', (ROOT / "_preview" / path).read_text(), path)
+
+    def test_brand_colors_are_written_once(self):
+        for name in ("_sass/ssc-ng/_brand.scss", "_sass/minimal-mistakes/skins/_ssc-ng.scss",
+                     "_sass/color_schemes/ssc-ng.scss"):
+            text = (ROOT / name).read_text().lower()
+            for value in ("#0e6480", "#0b6e8e", "#e3f1f5"):
+                self.assertNotIn(value, text, name)
+
+
+class MinimalMistakesUnderBasePath(MinimalMistakesChecks, unittest.TestCase):
+    output, base = "_preview", "/minimal-mistakes"
+
+
+class MinimalMistakesWithEmptyBasePath(MinimalMistakesChecks, unittest.TestCase):
+    output, base = "_preview-root", ""
 
 
 class BuiltUnderBasePath(JustTheDocsChecks, unittest.TestCase):
