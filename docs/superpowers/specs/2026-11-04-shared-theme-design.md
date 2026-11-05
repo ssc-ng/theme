@@ -63,7 +63,7 @@ The console and warning colors in the current color block, such as `--console-bg
 ### Logo (Decided)
 
 - Use `ssc-ng-gears-v2-400.png`, `-180.png` and `-64.png` from [`ssc-ng.github.io` PR #7](https://github.com/ssc-ng/ssc-ng.github.io/pull/7). Build them into the gem, and also serve the small sizes as the favicon and Apple touch icon on the Just the Docs sites. (Builder's call on the favicon: the sites have no consistent icon today)
-- On Just the Docs sites, the logo replaces the text site title in the sidebar header. This was visible in the approved builds.
+- On Just the Docs sites, the logo sits beside the text site title in the sidebar header. (Decided, on review of `archive`'s preview: the approved builds had the logo replacing the title)
 
 ## How it works
 

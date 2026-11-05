@@ -4,3 +4,11 @@ pre,
 :not(pre, figure) > code {
   font-weight: 700;
 }
+
+// The logo sits beside the site title: Just the Docs would give it the full
+// width and leave the title out.
+.site-logo {
+  flex: none;
+  width: 3rem;
+  margin-right: 0.75rem;
+}
