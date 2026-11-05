@@ -102,6 +102,18 @@ class JustTheDocsChecks:
         self.assertIn('href="https://ssc-ng.net/"', footer)
         self.assertIn("This site uses", footer)
 
+    def test_back_link_says_where_it_goes(self):
+        html = (self.site / "index.html").read_text()
+        link = re.search(r'<a class="site-back-link"[^>]*>(.*?)</a>', html, re.S).group(1)
+        self.assertIn("SSC-NG main site", link)
+
+    def test_back_link_is_the_size_of_the_nav_items(self):
+        def sizes(selector):
+            found = re.findall(re.escape(selector) + r"\s*\{[^}]*?font-size:\s*([^;}]+)", self.css())
+            self.assertTrue(found, selector)
+            return found
+        self.assertEqual(sizes(".site-back-link"), sizes(".nav-list .nav-list-item"))
+
     def test_text_box_styles_leave_the_search_box_alone(self):
         rule = re.search(r"([^{}]*input\[type=text\][^{}]*)\{[^}]*--brand-mono", self.css())
         self.assertIn(":not(.search-input)", rule.group(1))
