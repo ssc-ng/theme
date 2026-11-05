@@ -55,7 +55,7 @@ Choosing the next version:
 2. Tag that commit and push the tag:
 
    ```bash
-   git tag v1.1.0 && git push origin v1.1.0
+   git tag -a v1.1.0 -m "v1.1.0" && git push origin v1.1.0
    ```
 
 CI runs its tests on the tag. If they pass, it moves `v1` and `v1.1` to the release, and each site picks it up on its next build. If they fail, or the tag differs from the gemspec's version, no branch moves.
