@@ -79,6 +79,17 @@ class JustTheDocsChecks:
     def test_font_license_ships_with_the_fonts(self):
         self.assertTrue((self.site / "assets/ssc-ng-theme/OFL.txt").exists())
 
+    def test_sidebar_shows_the_site_title_beside_the_logo(self):
+        html = (self.site / "index.html").read_text()
+        link = re.search(r'<a [^>]*class="site-title[^"]*"[^>]*>(.*?)</a>', html, re.S).group(1)
+        self.assertIn('class="site-logo"', link)
+        visible = re.sub(r"<[^>]+>", "", link).strip()
+        self.assertEqual(visible, "Theme test site")
+
+    def test_logo_leaves_room_for_the_title(self):
+        logo = re.findall(r"\.site-logo\s*\{([^}]*)\}", self.css())[-1]
+        self.assertNotIn("width:100%", logo.replace(" ", ""))
+
     def test_icon_links_use_the_base_path(self):
         html = (self.site / "index.html").read_text()
         self.assertIn(f'href="{self.base}/assets/ssc-ng-theme/logo-64.png"', html)
