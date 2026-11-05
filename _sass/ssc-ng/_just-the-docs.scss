@@ -12,3 +12,17 @@ pre,
   width: 3rem;
   margin-right: 0.75rem;
 }
+
+// Link back to the main site, above the theme credit in the sidebar footer.
+// Sized like .nav-list-item, the other links in the sidebar.
+.site-back-link {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+
+  @include fs-4;
+
+  @include mq(md) {
+    @include fs-3;
+  }
+}

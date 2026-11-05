@@ -18,7 +18,7 @@ A single shared theme replaces this. A change made once reaches every site on it
 
 ## Non-goals
 
-- **Layout:** the Just the Docs layout stays as it is. (Decided)
+- **Layout:** the Just the Docs layout stays as it is, except for a link back to `ssc-ng.net` above the theme credit in the sidebar footer. (Decided)
 - **`stata-keyword-crosswalk`:** not included in this round. (Decided)
 - **Replacing the main site's theme:** Just the Docs is not the right theme for `ssc-ng.net`. (Decided)
 - **Rebuild triggers:** a theme change does not start site builds. Sites wait for their next build. (Decided: "on next build")
