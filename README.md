@@ -33,7 +33,7 @@ The plugin sets `logo`, and `color_scheme` or `minimal_mistakes_skin`, replacing
 
 Open a pull request. CI tests it, and the PR gets a Cloudflare preview of the test sites. Merging to `main` does not reach any site. That takes a release.
 
-Renaming or removing a CSS variable can break a site, so CI also builds the sites that use the theme and fails if a variable they use is gone.
+Renaming or removing a CSS variable can break a site, so CI also builds `archive`, `ssc2` and `docker-stata` against the change, and fails if a variable they use is gone. It only tests sites the version would reach, so a `v2.0.0` can rename a variable while those sites follow `v1`. It can't build `ssc-ng.net`, because that repository is private.
 
 ## Versions
 
@@ -62,7 +62,7 @@ Choosing the next version:
 
 CI runs its tests on the tag. If they pass, it moves `v1` and `v1.1` to the release, and each site picks it up on its next build. If they fail, or the tag differs from the gemspec's version, no branch moves.
 
-A branch only moves to the highest release it covers, so `v1.0.4` moves `v1.0` but not `v1` once `v1.1.0` exists. To fix an older minor, branch from its `v1.0` branch, set the version there, and tag the fix. Branches never move backward: to undo a bad release, release a fix with a higher version.
+A tag whose CI failed moves nothing and doesn't get in the way of later releases, so fix the problem and tag the next version. A branch only moves to the highest release it covers, so `v1.0.4` moves `v1.0` but not `v1` once `v1.1.0` exists. To fix an older minor, branch from its `v1.0` branch, set the version there, and tag the fix. Branches never move backward: to undo a bad release, release a fix with a higher version.
 
 ## Test locally
 
