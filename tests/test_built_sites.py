@@ -94,6 +94,29 @@ class JustTheDocsChecks:
             self.assertTrue(link.startswith(self.base + "/"), link)
 
 
+class PreviewIndex(unittest.TestCase):
+    index = ROOT / "_preview/index.html"
+
+    def test_index_links_to_every_test_site(self):
+        html = self.index.read_text()
+        for site in (ROOT / "test-sites").iterdir():
+            if site.is_dir():
+                self.assertIn(f'href="{site.name}/"', html)
+
+    def test_linked_sites_were_built(self):
+        for link in re.findall(r'href="([^"]+)/"', self.index.read_text()):
+            self.assertTrue((self.index.parent / link / "index.html").exists(), link)
+
+
+class Components(unittest.TestCase):
+    """The preview must show real components, or it can't reveal a bad change."""
+
+    def test_home_page_shows_each_component(self):
+        html = (ROOT / "_preview/just-the-docs/index.html").read_text()
+        for marker in ("<table", 'class="btn', "<kbd>", "highlighter-rouge", "<blockquote"):
+            self.assertIn(marker, html)
+
+
 class BuiltUnderBasePath(JustTheDocsChecks, unittest.TestCase):
     output = "_preview"
     base = "/just-the-docs"

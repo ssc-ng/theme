@@ -1,0 +1,41 @@
+# Publishes the test sites to Cloudflare Pages for each pull request from a
+# branch of this repository (forks can't read the deploy secrets), and posts
+# the link as a comment. Separate from ci.yml: a preview failure does not stop
+# a theme change that passes its tests.
+name: preview
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write     # only for the PR comment
+
+jobs:
+  preview:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build the test sites
+        run: bash script/build-test-sites.sh
+      - name: Deploy PR preview
+        id: preview
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy ./_preview
+            --project-name=ssc-theme
+            --branch=pr-${{ github.event.pull_request.number }}
+      - name: Publish preview link
+        if: steps.preview.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          URL: ${{ steps.preview.outputs.pages-deployment-alias-url }}
+        run: |
+          echo "📖 Preview: $URL" >> "$GITHUB_STEP_SUMMARY"
+          gh pr comment "$PR" --repo "$REPO" --edit-last --create-if-none \
+            --body "📖 **Preview:** $URL — commit \`${GITHUB_SHA:0:7}\`"

@@ -19,6 +19,7 @@ docker run --rm -v "$PWD:/w" -v ssc-theme-bundle:/usr/local/bundle -w /w \
         bundle exec jekyll build --quiet --baseurl "" --destination "/w/_preview-root/$name"
       ) || status=$?
     done
+    cp test-sites/index.html _preview/index.html
     chown -R "$HOST_IDS" _preview _preview-root test-sites 2>/dev/null || true
     exit "$status"
   '
