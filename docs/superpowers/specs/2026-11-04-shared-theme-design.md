@@ -88,7 +88,7 @@ Sites remove their local `color_scheme` and `logo` settings, and the plugin supp
 The plugin does four things:
 
 1. Adds the gem's Sass and include folders to Jekyll's search paths, with priority over the real theme and below the site's own files.
-2. Sets defaults for `color_scheme` and `logo`.
+2. Sets `color_scheme` and `logo`, replacing any local value so a site can't drift from the brand.
 3. Adds the logo and font files to the site's output.
 4. Detects the real theme and applies the matching layer.
 
