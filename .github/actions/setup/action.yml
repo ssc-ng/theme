@@ -1,8 +1,8 @@
 name: Set up Ruby with the newest SSC-NG theme
 description: >-
   Installs Ruby and the site's gems, keeping everything pinned by Gemfile.lock
-  except ssc-ng-theme, which moves to the newest v1. The changed lock file is
-  never committed.
+  except ssc-ng-theme, which moves to the newest release the site's Gemfile
+  follows. The changed lock file is never committed.
 inputs:
   working-directory:
     description: Folder holding the site's Gemfile
@@ -23,7 +23,7 @@ runs:
     # Not `bundle lock --update`: that leaves a git gem at its committed
     # revision and bumps other gems. setup-ruby turns on deployment mode, which
     # would refuse this change to the lock file.
-    - name: Move the theme to the newest v1
+    - name: Move the theme to the newest release the Gemfile follows
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       env:

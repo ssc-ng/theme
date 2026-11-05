@@ -1,10 +1,13 @@
-# Tests every theme change. On main, a change that passes moves the v1 branch,
-# which is what the sites follow, so it reaches them on their next build.
+# Tests every theme change. Pushing a release tag, such as v1.2.3, runs the same
+# tests and, if they pass, moves the v1 and v1.2 branches that sites follow, so
+# the release reaches them on their next build. See "Release a version" in the
+# README.
 name: ci
 on:
   pull_request:
   push:
     branches: [main]
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
 
 permissions:
   contents: read
@@ -88,8 +91,8 @@ jobs:
         if: steps.migrated.outputs.yes == 'true'
         run: python3 -I theme/script/check_css_vars.py site-repo/site/_site/assets/css/just-the-docs-default.css
 
-  promote:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
     needs: [test, action, float, real-sites]
     runs-on: ubuntu-latest
     permissions:
@@ -98,6 +101,14 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - name: Move v1 to this commit
+      - name: Move the branches this release is now the highest of
         # Never forced: anything but a fast-forward fails instead of overwriting.
-        run: git push origin HEAD:refs/heads/v1
+        # Atomic: if one branch can't move, neither does.
+        run: |
+          branches=$(git tag --list | python3 -I script/release_targets.py "$GITHUB_REF_NAME" ssc-ng-theme.gemspec)
+          if [ -z "$branches" ]; then
+            echo "A higher release exists, so no branch moves."
+            exit 0
+          fi
+          echo "Moving: $branches"
+          git push --atomic origin $(printf 'HEAD:refs/heads/%s ' $branches)

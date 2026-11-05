@@ -40,6 +40,12 @@ class CheckLockFloat(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("old", out)
 
+    def test_theme_version_changing_passes(self):
+        before = LOCK.format(rev="old", csv="1.0")
+        after = LOCK.format(rev="new", csv="1.0").replace("ssc-ng-theme (1.0.0)", "ssc-ng-theme (1.1.0)")
+        code, out = run_check(before, after, "new")
+        self.assertEqual((code, out), (0, ""))
+
     def test_another_gem_changing_fails(self):
         before = LOCK.format(rev="old", csv="1.0")
         code, out = run_check(before, LOCK.format(rev="new", csv="2.0"), "new")

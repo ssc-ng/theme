@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 REVISION = re.compile(r"(remote: \S*/ssc-ng/theme\.git\n\s+revision: )(\S+)")
+THEME_VERSION = re.compile(r"ssc-ng-theme \(\S+\)")
 
 
 def main():
@@ -19,7 +20,7 @@ def main():
     if not found or found.group(2) != expected:
         problems.append(f"theme is at {found and found.group(2)}, expected {expected}")
 
-    strip = lambda text: REVISION.sub(r"\1", text).splitlines()
+    strip = lambda text: THEME_VERSION.sub("ssc-ng-theme", REVISION.sub(r"\1", text)).splitlines()
     for old, new in zip(strip(before), strip(after)):
         if old != new:
             problems.append(f"other line changed: {old.strip()} -> {new.strip()}")

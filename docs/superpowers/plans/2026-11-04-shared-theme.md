@@ -4,7 +4,7 @@
 
 **Goal:** Give `archive`, `ssc2`, `docker-stata` and then `ssc-ng.net` one brand source, through a Jekyll plugin gem that updates every site on its next build.
 
-**Architecture:** `ssc-ng-theme` is a plugin gem used alongside the real theme. On `:site, :after_init` it adds its include and Sass folders to Jekyll's search paths, sets brand configuration, and a generator adds the logo and fonts to the output. Sites float on the `v1` branch through a composite action, and CI moves `v1` only after tests pass.
+**Architecture:** `ssc-ng-theme` is a plugin gem used alongside the real theme. On `:site, :after_init` it adds its include and Sass folders to Jekyll's search paths, sets brand configuration, and a generator adds the logo and fonts to the output. Sites float on the `v1` branch through a composite action. Pushing a release tag such as `v1.2.3` moves `v1` and `v1.2`, only after tests pass.
 
 **Tech Stack:** Ruby 3.3, Jekyll 4.4, Just the Docs 0.12, Minimal Mistakes 4.28, Sass, Python `unittest` for checks on built sites, GitHub Actions, Cloudflare Pages.
 
@@ -45,7 +45,7 @@
 | `_sass/ssc-ng/_shared.scss` | Rules shared by the three sites. |
 | `assets/ssc-ng-theme/` | Logo sizes, fonts, OFL license. Output at `/assets/ssc-ng-theme/`. |
 | `.github/actions/setup/action.yml` | Composite action that sites call. |
-| `.github/workflows/ci.yml` | Tests and promotion to `v1`. |
+| `.github/workflows/ci.yml` | Tests, and moving `v1` and `v1.x` on a release tag. |
 | `.github/workflows/preview.yml` | Cloudflare previews. |
 | `test-sites/just-the-docs/` | Test site, using the gem by local path. |
 | `script/build-test-sites.sh` | Builds all test sites into `_preview/` in a `ruby:3.3` container. |
@@ -236,11 +236,11 @@ Trigger on pull requests and pushes to `main`.
 
 - Job `test`: run `script/build-test-sites.sh` and the Python tests.
 - Job `real-sites`: matrix of `archive`, `ssc2`, `docker-stata`. Check out each site's `main`. If its Gemfile lists the gem, point it at this checkout by local path and build, then run `check_css_vars.py` on the output CSS. Skip sites not yet migrated.
-- Job `promote`: `if: github.ref == 'refs/heads/main' && github.event_name == 'push'`, `needs: [test, real-sites]`, `permissions: contents: write`. Run `git push origin HEAD:refs/heads/v1`, without force, so a non-fast-forward fails rather than overwriting.
+- Job `release` (first built as `promote`, which moved `v1` on every merge): `if: startsWith(github.ref, 'refs/tags/')`, `needs: [test, action, float, real-sites]`, `permissions: contents: write`. `script/release_targets.py` chooses which of `vX` and `vX.Y` to move. Push them atomically, without force, so a non-fast-forward fails rather than overwriting.
 
 - [ ] **Step 6: Verify on GitHub**
 
-Open the PR, then merge. Expected: `test` passes on the PR, and after merging, `git ls-remote origin v1` matches `main`.
+Open the PR, then merge and push a release tag. Expected: `test` passes on the PR, and after the tag's CI run, `git ls-remote origin v1` matches the tag.
 
 - [ ] **Step 7: Test that a site's lock floats.** On a throwaway `archive` branch, use the action with a lock pinned to an older `v1`. Expected: the build log shows the newest `v1` revision. Delete the branch afterward.
 
@@ -291,7 +291,7 @@ Work in `ssc-ng/archive`, on a branch from `origin/main`. Filling `_shared.scss`
 
 - [ ] **Step 2: Write and test `compare_css.py`,** with a test that a removed selector exits 1 and an added one exits 0.
 
-- [ ] **Step 3: Fill `_shared.scss`,** moving only rules present in all three sites' `custom.scss`, replacing old values with brand variables. Merge this to `theme` and wait for `v1` to move.
+- [ ] **Step 3: Fill `_shared.scss`,** moving only rules present in all three sites' `custom.scss`, replacing old values with brand variables. Merge this to `theme`, release it, and wait for `v1` to move.
 
 - [ ] **Step 4: Update the site.**
 
@@ -329,7 +329,7 @@ One PR per repo, the same way as Task 5 and in that order. Merge the first befor
 
 ### Task 7: Prove the "Done when" list
 
-- [ ] **Step 1: Test that a change reaches a site.** Merge a harmless visible change to `theme`, such as a one-shade hover change. Run `archive`'s `site` workflow by hand, with no commit to `archive`. Expected: the deployed CSS has the new value. Then revert it.
+- [ ] **Step 1: Test that a change reaches a site.** Merge and release a harmless visible change to `theme`, such as a one-shade hover change. Run `archive`'s `site` workflow by hand, with no commit to `archive`. Expected: the deployed CSS has the new value. Then revert it with another release.
 
 - [ ] **Step 2: Test that a broken change is blocked.** Open a PR that removes `--brand-primary`. Expected: `real-sites` fails, and because the PR isn't merged, `v1` doesn't move. Close the PR.
 
@@ -366,7 +366,7 @@ Expected: PASS.
 
 - [ ] **Step 5: Show Lars before going further.** Build the real main site with the skin in the scratchpad and show screenshots. The approved look was only ever seen on Just the Docs. If it can't be done cleanly, the spec's fallback is a shared CSS file. Wait for Lars's decision.
 
-- [ ] **Step 6: Merge the theme change, then open the `ssc-ng.github.io` PR.** That site has no `Gemfile.lock`, so confirm in the CI log that the action works without one and takes the newest `v1`. Keep its masthead dropdown, hero and tile rules. Expected: the preview matches what Lars approved, and CI passes.
+- [ ] **Step 6: Merge and release the theme change, then open the `ssc-ng.github.io` PR.** That site has no `Gemfile.lock`, so confirm in the CI log that the action works without one and takes the newest `v1`. Keep its masthead dropdown, hero and tile rules. Expected: the preview matches what Lars approved, and CI passes.
 
 ---
 
