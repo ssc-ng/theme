@@ -29,9 +29,38 @@ The plugin sets `color_scheme` and `logo`, replacing any local value. Page-speci
 
 ## Change the theme
 
-Open a pull request. CI tests it, and the PR gets a Cloudflare preview of the test sites. Merging to `main` moves the `v1` branch once CI passes, and each site picks the change up on its next build.
+Open a pull request. CI tests it, and the PR gets a Cloudflare preview of the test sites. Merging to `main` does not reach any site. That takes a release.
 
 Renaming or removing a CSS variable can break a site, so CI also builds the sites that use the theme and fails if a variable they use is gone.
+
+## Versions
+
+Sites choose how closely to follow the theme, in their `Gemfile`:
+
+| Gemfile | Follows | Gets |
+| --- | --- | --- |
+| `branch: "v1"` | The highest `v1.x.y` | Every release in `v1`. This is the normal choice. |
+| `branch: "v1.0"` | The highest `v1.0.x` | Fixes only |
+| `tag: "v1.0.3"` | That release | Nothing new, until the site changes the line |
+
+Choosing the next version:
+
+- **Patch, `v1.0.1`:** a fix that doesn't change the intended look.
+- **Minor, `v1.1.0`:** a change to the look, or a new style or variable, that needs no change in the sites.
+- **Major, `v2.0.0`:** a site has to change to keep working, as when a CSS variable is renamed or removed. Sites on `v1` stay there until they move.
+
+## Release a version
+
+1. Set the new version in `ssc-ng-theme.gemspec` by pull request, and merge it.
+2. Tag that commit and push the tag:
+
+   ```bash
+   git tag v1.1.0 && git push origin v1.1.0
+   ```
+
+CI runs its tests on the tag. If they pass, it moves `v1` and `v1.1` to the release, and each site picks it up on its next build. If they fail, or the tag differs from the gemspec's version, no branch moves.
+
+A branch only moves to the highest release it covers, so `v1.0.4` moves `v1.0` but not `v1` once `v1.1.0` exists. To fix an older minor, branch from its `v1.0` branch, set the version there, and tag the fix. Branches never move backward: to undo a bad release, release a fix with a higher version.
 
 ## Test locally
 

@@ -110,14 +110,16 @@ The plugin does four things:
 
 ### How updates reach sites
 
-- Sites follow the `v1` branch. A breaking redesign would use a new `v2` branch. (Builder's call)
+- Releases are numbered `vMAJOR.MINOR.PATCH`, and each is an unchanging tag. `v1` follows the highest `v1.x.y`, and `v1.0` the highest `v1.0.x`. (Decided) Sites follow `v1`, and a site that needs to can follow `v1.0` or pin a tag such as `v1.0.3`. `v1` and `v1.0` are branches rather than moving tags, because Bundler and CI handle a moving branch directly and a non-forced push can only fast-forward. (Builder's call)
+- A patch fixes something without changing the intended look. A minor changes the look or adds something, with no change needed in the sites. A major requires sites to change, such as renaming a CSS variable. (Builder's call)
+- A merge to `main` doesn't reach any site. Pushing a release tag does. (Decided)
 - `Gemfile.lock` stays committed and pins everything else. A CI step runs `bundle update ssc-ng-theme --conservative` after installing gems from the committed lock file, so the theme alone floats. (`bundle lock --update` does not work: it leaves a git gem at its committed revision and bumps other gems.) The changed lock file is never committed.
 - A composite action in `ssc-ng/theme` holds this and the Ruby setup, and replaces the `ruby/setup-ruby` step in each site's workflow, so these steps are not copied between repos. All sites run Ruby 3.3, which requires merging `ssc-ng.github.io` PR #8.
 - `ruby/setup-ruby` with `bundler-cache: true` runs first, so its cache is keyed on the committed lock file and stays valid when the theme moves. Only the theme is fetched afterward.
 
 Local previews, such as `ssc2`'s `tools/serve_site.sh`, use the theme version in the committed lock file unless the developer updates it. That is acceptable, since CI always takes the latest. Check that the existing Docker images can still fetch a gem from GitHub.
 
-Expected time for a change to arrive:
+Expected time for a release to arrive:
 
 | Site | Scheduled rebuild | Longest wait |
 | --- | --- | --- |
@@ -128,7 +130,7 @@ Expected time for a change to arrive:
 
 ### Safety
 
-- Changes land on `main`. CI builds a small test site for each supported theme and runs checks. If they pass, CI moves `v1` to that commit. (Decided: test before release. Builder's call: the move is automatic)
+- Changes land on `main`, and CI builds a small test site for each supported theme and runs checks. A release tag runs the same checks. If they pass, CI moves the release's branches. (Decided: test before release. Builder's call: the move is automatic once a tag is pushed, and a tag must match the gemspec's version)
 - Each site's deploy already depends on its build, so a failed build leaves the last good version live. This also covers GitHub being unavailable when a gem is fetched.
 - The test sites should cover the logo, fonts, code styling and links under a base path.
 
@@ -139,12 +141,12 @@ Every pull request on `ssc-ng/theme` gets a preview website, using the same Clou
 - **Content:** the test sites from the Safety section, under one preview address, with a small index page linking to each. Each test site sits under its own path, such as `/just-the-docs/`, which also exercises links under a base path. Include pages showing real components: code, tables, buttons, links, logo. (Builder's call)
 - **Scope:** pull requests from branches of this repository only, because forks can't read the deploy secrets, as on the other sites. (Builder's call)
 - **Setup:** one Cloudflare Pages project named `ssc-theme`, following the `ssc-` naming that `archive` uses, and the organization secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, which this repository can already read. The project still has to be created. `archive`'s `site/DEPLOY-PREVIEW.md` has the steps.
-- **Reuse:** the workflow should match the other sites' `preview` job. It is separate from promotion to `v1`, and a preview failure should not count as a failed theme test. (Builder's call)
+- **Reuse:** the workflow should match the other sites' `preview` job. It is separate from releases, and a preview failure should not count as a failed theme test. (Builder's call)
 
 ## Order of work
 
 1. **Prove the plugin on `archive`, on a throwaway branch.** It must show that a plugin can add include and Sass paths with the right priority, set defaults, and output static files. Nothing else proceeds until this works. If it fails, fall back to having the composite action check out the theme and copy its files into the site before the build, and revisit this design with Lars.
-2. **Build the gem and CI:** brand and Just the Docs layers, test site, and promotion to `v1`.
+2. **Build the gem and CI:** brand and Just the Docs layers, test site, and releases.
 3. **Add theme previews** in their own PR, so that every later theme change can be seen before merging.
 4. **Move `archive`** by PR. Compare its Cloudflare preview with the approved look.
 5. **Move `ssc2` and `docker-stata`** by PR, one at a time.
@@ -160,7 +162,7 @@ Every pull request on `ssc-ng/theme` gets a preview website, using the same Clou
 ## Done when
 
 - `archive`, `ssc2` and `docker-stata` get colors, code font and logo only from the gem, and their previews match the approved look.
-- A test change merged to `main` of `ssc-ng/theme` reaches a site on its next build, with no commit to that site.
-- A deliberately broken theme change fails CI and does not reach `v1`.
+- A test change released from `ssc-ng/theme` reaches a site on its next build, with no commit to that site.
+- A deliberately broken theme change fails CI, and a release of it does not move `v1`.
 - A pull request on `ssc-ng/theme` gets a working preview link, posted as a comment.
 - For phase 2, `ssc-ng.net` carries the brand from the same source, keeping its layout.
